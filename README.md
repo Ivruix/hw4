@@ -1,66 +1,151 @@
-## Foundry
+#  Выполнил
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+Каверин Максим, БПИ217
 
-Foundry consists of:
+# Изменения
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## Изменение 1
 
-## Documentation
+Функкция `ownerOf` была:
 
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
-
-```shell
-$ forge build
+```
+address owner = _ownerOf(tokenId);
+require(owner != address(0), "ERC721: invalid token ID");
+return owner;
 ```
 
-### Test
+Стала:
 
-```shell
-$ forge test
+```
+address owner = _ownerOf(tokenId);
+return owner;
 ```
 
-### Format
+## Изменение 2
 
-```shell
-$ forge fmt
+Функкция `balanceOf` была:
+
+```
+require(owner != address(0), "ERC721: address zero is not a valid owner");
+return _balances[owner];
 ```
 
-### Gas Snapshots
+Стала:
 
-```shell
-$ forge snapshot
+```
+return _balances[owner];
 ```
 
-### Anvil
+## Изменение 3
 
-```shell
-$ anvil
+Функкция `_transfer` была:
+
+```
+require(ERC721.ownerOf(tokenId) == from, "ERC721: transfer from incorrect owner");
+require(to != address(0), "ERC721: transfer to the zero address");
+
+_beforeTokenTransfer(from, to, tokenId, 1);
+
+require(ERC721.ownerOf(tokenId) == from, "ERC721: transfer from incorrect owner");
+
+delete _tokenApprovals[tokenId];
+
+unchecked {
+    _balances[from] -= 1;
+    _balances[to] += 1;
+}
+_owners[tokenId] = to;
+
+emit Transfer(from, to, tokenId);
+
+_afterTokenTransfer(from, to, tokenId, 1);
 ```
 
-### Deploy
+Стала (нет `delete _tokenApprovals[tokenId]`):
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+```
+require(ERC721.ownerOf(tokenId) == from, "ERC721: transfer from incorrect owner");
+require(to != address(0), "ERC721: transfer to the zero address");
+
+_beforeTokenTransfer(from, to, tokenId, 1);
+
+require(ERC721.ownerOf(tokenId) == from, "ERC721: transfer from incorrect owner");
+
+unchecked {
+    _balances[from] -= 1;
+    _balances[to] += 1;
+}
+_owners[tokenId] = to;
+
+emit Transfer(from, to, tokenId);
+
+_afterTokenTransfer(from, to, tokenId, 1);
 ```
 
-### Cast
+# Запуск фаззера
 
-```shell
-$ cast <subcommand>
+ Для обычного ERC721:
+
+```
+echidna ./test/CryticTestInternal.sol --contract CryticERC721InternalHarness --config ./configs/echidna-config-internal.yaml
 ```
 
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
 ```
+echidna ./test/CryticTestExternal.sol --contract CryticERC721ExternalHarness --config ./configs/
+echidna-config-external.yaml
+```
+
+Для модифицированного ERC721:
+
+```
+echidna ./test/CryticTestInternalModified.sol --contract CryticERC721InternalHarness --config ./c
+onfigs/echidna-config-internal-modified.yaml
+```
+
+```
+echidna ./test/CryticTestExternalModified.sol --contract CryticERC721ExternalHarness --config ./
+configs/echidna-config-external-modified.yaml
+```
+
+
+# Описание нарушенных свойств
+
+## Свойство 1
+
+**Название:** ownerOfInvalidTokenMustRevert
+
+**Почему нарушено:** Нет проверки на нулевой адрес. Из-за этого функция завершается успешно, хотя не должна.
+
+**Номер виновнoго изменения:** 1
+
+## Свойство 2
+
+**Название:** burnRevertOnOwnerOf
+
+**Почему нарушено:** Нет проверки на нулевой адрес. Из-за этого получается получить владельца сожженного токена, что не должно происходить.
+
+**Номер виновнoго изменения:** 1
+
+## Свойство 3
+
+**Название:** balanceOfZeroAddressMustRevert
+
+**Почему нарушено:** Нет проверки на нулевой адрес. Из-за этого функция завершается успешно, хотя не должна.
+
+**Номер виновнoго изменения:** 2
+
+## Свойство 4
+
+**Название:** transferFromResetApproval
+
+**Почему нарушено:** После совершения перевода одобрение не убирается, а должно.
+
+**Номер виновнoго изменения:** 3
+
+## Свойство 5
+
+**Название:** transferFromSelfResetsApproval
+
+**Почему нарушено:** Аналогично, но только перевод самому себе.
+
+**Номер виновнoго изменения:** 3
