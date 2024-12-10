@@ -82,6 +82,21 @@ emit Transfer(from, to, tokenId);
 _afterTokenTransfer(from, to, tokenId, 1);
 ```
 
+# Изменения в ERC721 ⚠️
+
+Чтобы можно было переопределить некоторые функции, пришлось вносить изменения напрямую в код ERC721. Эти изменения, скорее всего, не отразятся в коде, так как будет скачиваться оригинальная версия openzeppelin-contracts. Все, что я сделал, это заменил `private` на `public` вот тут в `ERC721.sol`:
+
+```
+// Mapping from token ID to owner address
+mapping(uint256 => address) public _owners;
+
+// Mapping owner address to token count
+mapping(address => uint256) public _balances;
+
+// Mapping from token ID to approved address
+mapping(uint256 => address) public _tokenApprovals;
+```
+
 # Запуск фаззера
 
  Для обычного ERC721:
@@ -106,7 +121,6 @@ onfigs/echidna-config-internal-modified.yaml
 echidna ./test/CryticTestExternalModified.sol --contract CryticERC721ExternalHarness --config ./
 configs/echidna-config-external-modified.yaml
 ```
-
 
 # Описание нарушенных свойств
 
