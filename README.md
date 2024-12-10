@@ -106,20 +106,17 @@ echidna ./test/CryticTestInternal.sol --contract CryticERC721InternalHarness --c
 ```
 
 ```
-echidna ./test/CryticTestExternal.sol --contract CryticERC721ExternalHarness --config ./configs/
-echidna-config-external.yaml
+echidna ./test/CryticTestExternal.sol --contract CryticERC721ExternalHarness --config ./configs/echidna-config-external.yaml
 ```
 
 Для модифицированного ERC721:
 
 ```
-echidna ./test/CryticTestInternalModified.sol --contract CryticERC721InternalHarness --config ./c
-onfigs/echidna-config-internal-modified.yaml
+echidna ./test/CryticTestInternalModified.sol --contract CryticERC721InternalHarness --config ./configs/echidna-config-internal-modified.yaml
 ```
 
 ```
-echidna ./test/CryticTestExternalModified.sol --contract CryticERC721ExternalHarness --config ./
-configs/echidna-config-external-modified.yaml
+echidna ./test/CryticTestExternalModified.sol --contract CryticERC721ExternalHarness --config ./configs/echidna-config-external-modified.yaml
 ```
 
 # Описание нарушенных свойств
